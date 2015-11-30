@@ -61,7 +61,7 @@
 		}
 
 		function getMarks($lesson, $pupil) {
-			$query = $this->db->query("SELECT ACHIEVEMENT_MARK, a.ACHIEVEMENT_ID, a.TYPE_ID, t.TYPE_NAME
+			$query = $this->db->query("SELECT ACHIEVEMENT_MARK, a.ACHIEVEMENT_ID, a.TYPE_ID, t.TYPE_NAME, LESSON_ID
 			FROM ACHIEVEMENT a LEFT JOIN TYPE t ON a.TYPE_ID = t.TYPE_ID
 			WHERE LESSON_ID = '$lesson' AND PUPIL_ID = '$pupil'");
 			return $query->result_array();
