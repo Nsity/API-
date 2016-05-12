@@ -37,8 +37,16 @@ class Timetable extends CI_Controller {
 			$arrSubjects = array();
 			$result = $this->model->getSubjectsClass($class_id);
 		    foreach ($result as $row) {
-			    $arrSubjects[] = array("Ид" => $row['SUBJECTS_CLASS_ID'], "Наименование" => $row['SUBJECT_NAME']);
+			    $arrSubjects[] = array("Ид" => $row['SUBJECTS_CLASS_ID'], "Наименование" => $row['SUBJECT_NAME'], "УчительИд" => $row['TEACHER_ID']);
 			}
+
+			$arrTeachers = array();
+
+			$result = $this->model->getTeachers($class_id);
+			foreach ($result as $row) {
+			    $arrTeachers[] = array("Ид" => $row['TEACHER_ID'], "Имя" => $row['TEACHER_NAME']);
+			}
+
 
 			/*$arrProgress = array();
 
@@ -88,6 +96,7 @@ class Timetable extends CI_Controller {
 				"Время" => $arrTimes,
 				"Предметы" => $arrSubjects,
 				"Расписание" => $arrTimetable,
+				"Учителя" => $arrTeachers,
 				"Периоды" => $arrPeriods)), JSON_UNESCAPED_UNICODE);
 			} else {
 				//http_response_code(400);

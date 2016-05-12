@@ -39,12 +39,18 @@
 
 
 		function getSubjectsClass($class_id) {
-			$query = $this->db->query("SELECT sc.SUBJECTS_CLASS_ID, s.SUBJECT_NAME
+			$query = $this->db->query("SELECT sc.SUBJECTS_CLASS_ID, s.SUBJECT_NAME, sc.TEACHER_ID
 			FROM SUBJECTS_CLASS sc LEFT JOIN SUBJECT s ON s.SUBJECT_ID = sc.SUBJECT_ID
 			WHERE CLASS_ID = '$class_id' ORDER BY 2");
 			return $query->result_array();
 		}
 
+		function getTeachers($class_id) {
+			$query = $this->db->query("SELECT t.TEACHER_NAME, t.TEACHER_ID
+			FROM TEACHER t JOIN SUBJECTS_CLASS sc ON sc.TEACHER_ID = t.TEACHER_ID
+			WHERE sc.CLASS_ID = '$class_id' ORDER BY 1");
+			return $query->result_array();
+		}
 
 		function getPass($lesson, $pupil) {
 			$query = $this->db->query("SELECT ATTENDANCE_PASS
@@ -89,16 +95,6 @@
 			JOIN SUBJECT s ON s.SUBJECT_ID = sc.SUBJECT_ID
 			WHERE CLASS_ID = '$class_id' AND LESSON_HOMEWORK != ''
 			ORDER BY LESSON_DATE DESC
-			LIMIT $offset, $limit");
-			return $query->result_array();
-		}
-
-
-		function getTeachers($limit = null, $offset = null, $search) {
-			$query = $this->db->query("SELECT *
-			FROM TEACHER
-			WHERE TEACHER_ID != 13 AND (IFNULL(TEACHER_NAME, '') LIKE '%$search%' OR IFNULL(TEACHER_LOGIN, '') LIKE '%$search%' )
-			ORDER BY TEACHER_NAME
 			LIMIT $offset, $limit");
 			return $query->result_array();
 		}
@@ -189,4 +185,80 @@
 			return $result;
 		}
 
-	}
+
+
+
+
+		function addGCMDevice($pupil_id, $token) {
+			$this->db->set('PUPIL_ID', $pupil_id);
+			$this->db->set('GCM_USERS_REGID', $token);
+			$this->db->insert('GCM_USERS');
+		}
+
+		function deleteGCMDevice($pupil_id, $token) {
+			$this->db->delete('GCM_USERS', array('PUPIL_ID' => $pupil_id, 'GCM_USERS_REGID' => $token));
+		}
+
+
+		function readConversation($user, $id, $from, $to) {
+			$this->db->set('MESSAGE_READ', 1);
+			$this->db->where($from."_ID", $user);
+			$this->db->where($to."_ID", $id);
+			$this->db->update($from."S_MESSAGE");
+		}
+
+
+		function addMessage($id, $user, $text, $date, $from, $to) {
+			$this->db->set('MESSAGE_TEXT', $text);
+			$this->db->set('MESSAGE_DATE', $date);
+			$this->db->insert('MESSAGE');
+			$message_id = $this->db->insert_id();
+
+			$this->db->set('MESSAGE_FOLDER', 1);
+			$this->db->set('MESSAGE_ID', $message_id);
+			$this->db->set($to."_ID", $user);
+			$this->db->set($from."_ID", $id);
+			$this->db->set('MESSAGE_READ', 0);
+			$this->db->insert($to."S_MESSAGE");
+
+			$this->db->set('MESSAGE_FOLDER', 2);
+			$this->db->set('MESSAGE_ID', $message_id);
+			$this->db->set($to."_ID", $user);
+			$this->db->set($from."_ID", $id);
+			$this->db->set('MESSAGE_READ', 0);
+			$this->db->insert($from."S_MESSAGE");
+
+			return $this->db->insert_id();
+		}
+
+
+		function getConversations($pupil_id) {
+			$query = $this->db->query("SELECT TEACHER_ID
+			FROM PUPILS_MESSAGE
+			WHERE PUPIL_ID = '$pupil_id'
+			GROUP BY TEACHER_ID");
+			return $query->result_array();
+		}
+
+
+		function getLastMessageInConversation($pupil_id, $teacher_id) {
+			$query = $this->db->query("SELECT TEACHER_ID, pm.MESSAGE_ID, MESSAGE_TEXT, MESSAGE_DATE, PUPILS_MESSAGE_ID
+			FROM pupils_message pm JOIN MESSAGE m ON pm.MESSAGE_ID = m.MESSAGE_ID
+			WHERE PUPIL_ID = '$pupil_id' AND TEACHER_ID = '$teacher_id'
+			ORDER BY MESSAGE_DATE DESC
+			LIMIT 1");
+			return $query->row_array();
+		}
+
+
+
+		function getNewMessages($pupil_id, $teacher_id) {
+			$query = $this->db->query("SELECT COUNT(*) AS COUNT
+			FROM PUPILS_MESSAGE
+			WHERE PUPIL_ID = '$pupil_id' AND TEACHER_ID = '$teacher_id' AND MESSAGE_READ = 0 AND MESSAGE_FOLDER = 1");
+			return $query->row_array();
+		}
+
+
+
+}
