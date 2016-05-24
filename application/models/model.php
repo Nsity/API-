@@ -190,9 +190,17 @@
 
 
 		function addGCMDevice($pupil_id, $token) {
+			$query = $this->db->query("SELECT COUNT(*) AS COUNT
+			FROM GCM_USERS
+			WHERE PUPIL_ID = '$pupil_id' AND GCM_USERS_REGID = '$token'");
+			$count = $query->row_array()['COUNT'];
+
+			if($count == 0) {
+
 			$this->db->set('PUPIL_ID', $pupil_id);
 			$this->db->set('GCM_USERS_REGID', $token);
 			$this->db->insert('GCM_USERS');
+			}
 		}
 
 		function deleteGCMDevice($pupil_id, $token) {
@@ -232,6 +240,14 @@
 		}
 
 
+		function getMessageById($id) {
+			$query = $this->db->query("SELECT *
+			FROM pupils_message pm JOIN MESSAGE m ON pm.MESSAGE_ID = m.MESSAGE_ID
+			WHERE PUPILS_MESSAGE_ID = '$id'");
+			return $query->row_array();
+		}
+
+
 		function getConversations($pupil_id) {
 			$query = $this->db->query("SELECT TEACHER_ID
 			FROM PUPILS_MESSAGE
@@ -251,12 +267,33 @@
 		}
 
 
+		function getAllMessages($pupil_id) {
+			$query = $this->db->query("SELECT PUPILS_MESSAGE_ID, pm.MESSAGE_ID, MESSAGE_DATE, MESSAGE_TEXT,
+			MESSAGE_READ, MESSAGE_FOLDER, pm.TEACHER_ID
+			FROM PUPILS_MESSAGE pm JOIN MESSAGE m ON m.MESSAGE_ID = pm.MESSAGE_ID
+			WHERE PUPIL_ID = '$pupil_id'
+			ORDER BY MESSAGE_DATE");
+			return $query->result_array();
+		}
+
+
 
 		function getNewMessages($pupil_id, $teacher_id) {
 			$query = $this->db->query("SELECT COUNT(*) AS COUNT
 			FROM PUPILS_MESSAGE
 			WHERE PUPIL_ID = '$pupil_id' AND TEACHER_ID = '$teacher_id' AND MESSAGE_READ = 0 AND MESSAGE_FOLDER = 1");
 			return $query->row_array();
+		}
+
+
+
+		function getMessagesInConversation($pupil_id, $teacher_id) {
+			$query = $this->db->query("SELECT PUPILS_MESSAGE_ID, pm.MESSAGE_ID, MESSAGE_DATE, MESSAGE_TEXT,
+			MESSAGE_READ, MESSAGE_FOLDER, pm.TEACHER_ID
+			FROM PUPILS_MESSAGE pm JOIN MESSAGE m ON m.MESSAGE_ID = pm.MESSAGE_ID
+			WHERE PUPIL_ID = '$pupil_id' AND pm.TEACHER_ID = '$teacher_id'
+			ORDER BY MESSAGE_DATE ");
+			return $query->result_array();
 		}
 
 
