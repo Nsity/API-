@@ -48,6 +48,20 @@ class Timetable extends CI_Controller {
 			}
 
 
+
+			$messages = $this->model->getAllMessages($pupil_id);
+
+		    $arrMessages = array();
+
+		    foreach ($messages as $message) {
+			    $arrMessages[] = array("УчительИд" => $message['TEACHER_ID'],
+			    "ТекстСообщения" => $message['MESSAGE_TEXT'],
+			    "ДатаСообщения" => $message['MESSAGE_DATE'],
+			    "Ид" => $message['PUPILS_MESSAGE_ID'],
+			    "ТипСообщения" => $message['MESSAGE_FOLDER'],
+			    "Прочтено" => $message["MESSAGE_READ"]);
+		    }
+
 			/*$arrProgress = array();
 
 		    $k = 0;
@@ -97,7 +111,8 @@ class Timetable extends CI_Controller {
 				"Предметы" => $arrSubjects,
 				"Расписание" => $arrTimetable,
 				"Учителя" => $arrTeachers,
-				"Периоды" => $arrPeriods)), JSON_UNESCAPED_UNICODE);
+				"Периоды" => $arrPeriods,
+				"Сообщения" => $arrMessages)), JSON_UNESCAPED_UNICODE);
 			} else {
 				//http_response_code(400);
 				header("HTTP/1.0 400 Bad Request");
