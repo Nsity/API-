@@ -117,6 +117,16 @@ class Message extends CI_Controller {
     }
 
 
+    public function read($pupil_id = null, $teacher_id = null) {
+	    if($pupil_id == null || $teacher_id == null) {
+			header("HTTP/1.0 400 Bad Request");
+			echo json_encode(array('Exception' => array('Message' => "Отсутствуют параметры")), JSON_UNESCAPED_UNICODE);
+	    } else {
+		    $this->model->readConversation($pupil_id, $teacher_id, 'PUPIL', 'TEACHER');
+		    echo ('{}');
+		}
+    }
+
 
 
 }

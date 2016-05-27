@@ -295,7 +295,4 @@
 			ORDER BY MESSAGE_DATE ");
 			return $query->result_array();
 		}
-
-
-
 }
