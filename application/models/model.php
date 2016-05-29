@@ -295,4 +295,12 @@
 			ORDER BY MESSAGE_DATE ");
 			return $query->result_array();
 		}
+
+
+
+		function getNews($limit = null, $offset = null){
+			$query = $this->db->query("SELECT * FROM NEWS n JOIN TEACHER t ON t.TEACHER_ID = n.TEACHER_ID
+			ORDER BY NEWS_TIME DESC, NEWS_THEME LIMIT $offset, $limit");
+			return $query->result_array();
+		}
 }
